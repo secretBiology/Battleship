@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Battleship</string>
+    <string name="game_list">Game Lobby</string>
+    <string name="game_create">New Game</string>
+
+    <string name="available_ships"> Available ships : %d</string>
+
+    <plurals name="select_ships">
+        <item quantity="one">Select ship (%d)</item>
+        <item quantity="other">Select ships (%d)</item>
+    </plurals>
+
+    <string name="start_game">Start Game</string>
+
+    <string name="no_games">No games found. You can create one!</string>
+    <string name="created_by">Created by : %s</string>
+</resources>

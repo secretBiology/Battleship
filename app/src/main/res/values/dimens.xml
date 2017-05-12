@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="board_item_size">25sp</dimen>
+    <dimen name="selected_ship_size">15sp</dimen>
+    <dimen name="bottom_sheet_height">100sp</dimen>
+
+    <dimen name="game_list_name_height">50sp</dimen>
+    <dimen name="game_list_name_width">50sp</dimen>
+</resources>
