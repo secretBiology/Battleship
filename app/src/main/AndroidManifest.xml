@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.secretbiology.battleship">
 
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,7 +20,9 @@
         </activity>
         <activity android:name=".arrange.ArrangeShips" />
         <activity android:name=".setup.GameSetup" />
-        <activity android:name=".setup.NewGame"></activity>
+        <activity android:name=".setup.NewGame" />
+        <activity android:name=".game.PlayGame" />
+        <activity android:name=".setup.Login" />
     </application>
 
 </manifest>

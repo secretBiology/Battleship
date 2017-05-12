@@ -14,6 +14,11 @@ public class BoardItem {
         this.type = type;
     }
 
+    public BoardItem(int type, int shipID) {
+        this.type = type;
+        this.shipID = shipID;
+    }
+
     public int getType() {
         return type;
     }

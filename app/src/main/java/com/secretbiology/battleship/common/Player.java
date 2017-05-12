@@ -86,4 +86,8 @@ public class Player {
     public void setReady(boolean ready) {
         isReady = ready;
     }
+
+    public void addPoint() {
+        points++;
+    }
 }

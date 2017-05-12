@@ -1,5 +1,7 @@
 package com.secretbiology.battleship.arrange;
 
+import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,12 +20,14 @@ import butterknife.ButterKnife;
  * Code is released under MIT license
  */
 
-class BoardAdapter extends RecyclerView.Adapter<BoardAdapter.BoardView> implements GameConstants {
+public class BoardAdapter extends RecyclerView.Adapter<BoardAdapter.BoardView> implements GameConstants {
 
     private List<BoardItem> itemList;
     private OnItemClick click;
+    private boolean isEnemy;
 
-    BoardAdapter(List<BoardItem> itemList) {
+
+    public BoardAdapter(List<BoardItem> itemList) {
         this.itemList = itemList;
     }
 
@@ -34,8 +38,17 @@ class BoardAdapter extends RecyclerView.Adapter<BoardAdapter.BoardView> implemen
 
     @Override
     public void onBindViewHolder(final BoardView holder, int position) {
-
+        Context context = holder.itemView.getContext();
         holder.icon.setImageResource(resourceID(position));
+        if (itemList.get(position).getType() == CELL_DAMAGED_SHIP) {
+            if (isEnemy) {
+                holder.icon.setColorFilter(ContextCompat.getColor(context, R.color.green));
+            } else {
+                holder.icon.setColorFilter(ContextCompat.getColor(context, R.color.red));
+            }
+        } else {
+            holder.icon.setColorFilter(ContextCompat.getColor(context, R.color.ship_background));
+        }
 
         holder.icon.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -60,11 +73,11 @@ class BoardAdapter extends RecyclerView.Adapter<BoardAdapter.BoardView> implemen
         }
     }
 
-    void setOnItemClick(OnItemClick c) {
+    public void setOnItemClick(OnItemClick c) {
         click = c;
     }
 
-    interface OnItemClick {
+    public interface OnItemClick {
         void selected(int position);
     }
 
@@ -74,10 +87,21 @@ class BoardAdapter extends RecyclerView.Adapter<BoardAdapter.BoardView> implemen
             case CELL_EMPTY:
                 return R.drawable.icon_empty;
             case CELL_SHIP:
-                return R.drawable.icon_ship;
+                if (isEnemy) {
+                    return R.drawable.icon_empty;
+                } else {
+                    return R.drawable.icon_ship;
+                }
+            case CELL_MISSED:
+                return R.drawable.icon_missed;
+            case CELL_DAMAGED_SHIP:
+                return R.drawable.icon_damaged;
             default:
                 return R.drawable.icon_empty;
         }
+    }
 
+    public void setEnemy(boolean enemy) {
+        isEnemy = enemy;
     }
 }

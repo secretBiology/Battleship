@@ -84,7 +84,7 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
                 updateUI();
                 if (state.getPlayer().isReady() && state.getEnemy().isReady()) {
                     myRef.child(state.getGameDetails().getGameID()).removeEventListener(this);
-                    myRef.child(state.getGameDetails().getGameID()).child("running").setValue(true);
+                    myRef.child(state.getGameDetails().getGameID()).removeValue();
                     startActivity(new Intent(this, ArrangeShips.class));
                     finish();
                 }
@@ -133,9 +133,9 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
 
     private String readyNode() {
         if (state.getPlayer().getNo() == 0) {
-            return "player1/ready";
+            return GameConstants.NETWORK_PLAYER_1 + "/ready";
         } else {
-            return "player2/ready";
+            return GameConstants.NETWORK_PLAYER_2 + "/ready";
         }
     }
 

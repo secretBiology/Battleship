@@ -1,6 +1,9 @@
 package com.secretbiology.battleship.common;
 
+import com.secretbiology.battleship.arrange.BoardItem;
 import com.secretbiology.helpers.general.Log;
+
+import java.util.List;
 
 /**
  * Created by Dexter for Battleship .
@@ -12,6 +15,7 @@ public class GameState {
     private static GameState instance;
     private GameDetails gameDetails;
     private int currentPlayer;
+    private GameStatus gameStatus;
 
     private GameState(GameDetails gameDetails, int currentPlayer) {
         this.gameDetails = gameDetails;
@@ -62,6 +66,30 @@ public class GameState {
             gameDetails.getPlayer2().setName("--");
             gameDetails.getPlayer2().setEmail("--");
             gameDetails.getPlayer2().setReady(false);
+        }
+    }
+
+    public GameStatus getGameStatus() {
+        return gameStatus;
+    }
+
+    public void setGameStatus(GameStatus gameStatus) {
+        this.gameStatus = gameStatus;
+    }
+
+    public List<BoardItem> getEnemyGrid() {
+        if (currentPlayer == 0) {
+            return Helper.convertToGrid(gameStatus.getPlayer2Grid(), gameStatus.getPlayer2Ship());
+        } else {
+            return Helper.convertToGrid(gameStatus.getPlayer1Grid(), gameStatus.getPlayer1Ship());
+        }
+    }
+
+    public List<BoardItem> getPlayerGrid() {
+        if (currentPlayer == 0) {
+            return Helper.convertToGrid(gameStatus.getPlayer1Grid(), gameStatus.getPlayer1Ship());
+        } else {
+            return Helper.convertToGrid(gameStatus.getPlayer2Grid(), gameStatus.getPlayer2Ship());
         }
     }
 }

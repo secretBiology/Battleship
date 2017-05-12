@@ -1,8 +1,12 @@
 package com.secretbiology.battleship.arrange;
 
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.BottomSheetDialogFragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,19 +16,34 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.secretbiology.battleship.GameConstants;
 import com.secretbiology.battleship.R;
-import com.secretbiology.battleship.network.FirebaseMethods;
+import com.secretbiology.battleship.common.GameState;
+import com.secretbiology.battleship.common.GameStatus;
+import com.secretbiology.battleship.common.Helper;
+import com.secretbiology.battleship.game.PlayGame;
 import com.secretbiology.helpers.general.General;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnShipSelected, GameConstants {
+import static android.R.string.cancel;
+import static android.R.string.ok;
+
+public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnShipSelected, GameConstants, ValueEventListener {
 
     @BindView(R.id.selected_recycler)
     RecyclerView selectedRecycler;
@@ -38,11 +57,15 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
     Button showShips;
 
     public static List<ShipModel> modelList;
+    static boolean active = false;
     private List<BoardItem> itemList;
     private ShipModel selectedShip;
     private SelectedItemAdapter selectedAdapter;
     private BoardAdapter adapter;
     private SparseArray<ShipModel> shipMap;
+    private DatabaseReference myRef;
+    private GameState state;
+    private boolean playerReady;
 
 
     @Override
@@ -50,12 +73,10 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
         super.onCreate(savedInstanceState);
         setContentView(R.layout.arrange_board);
         ButterKnife.bind(this);
+        state = GameState.getInstance();
+        myRef = FirebaseDatabase.getInstance().getReference(GameConstants.GAME_RUN);
 
-        shipMap = new SparseArray<>();
-        shipMap.put(0, new ShipModel(0, 2));
-        shipMap.put(1, new ShipModel(1, 5));
-        shipMap.put(2, new ShipModel(2, 3));
-        shipMap.put(3, new ShipModel(3, 3));
+        shipMap = Helper.getShips();
 
         modelList = new ArrayList<>();
 
@@ -87,14 +108,15 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
             public void selected(int position) {
                 if (selectedShip != null) {
                     addShipToBoard(position);
-                } else if (itemList.get(position).getShipID() != -1) {
+                } else if (itemList.get(position).getShipID() != -1 && !playerReady) {
                     reselectShip(position);
                 }
             }
         });
 
         rotateButton.setVisibility(View.GONE);
-        FirebaseMethods.getData();
+        myRef.child(state.getGameDetails().getGameID()).addValueEventListener(this);
+
 
     }
 
@@ -105,8 +127,9 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
             BottomSheetDialogFragment bottomSheetDialogFragment = new ShipFragment();
             bottomSheetDialogFragment.show(getSupportFragmentManager(), bottomSheetDialogFragment.getTag());
         } else {
-            //Start
-            FirebaseMethods.sendData(itemList);
+            if (!playerReady) {
+                showWarning();
+            }
         }
     }
 
@@ -191,11 +214,77 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
     private void changeButton() {
         if (modelList.size() == 0) {
             showShips.setText(getString(R.string.start_game));
-            showShips.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
         } else {
             showShips.setText(getResources().getQuantityString(R.plurals.select_ships, modelList.size(), modelList.size()));
             showShips.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.colorPrimary));
         }
     }
+
+    @Override
+    public void onDataChange(DataSnapshot dataSnapshot) {
+        if (dataSnapshot != null) {
+            if (dataSnapshot.getValue() != null) {
+                GameStatus status = dataSnapshot.getValue(GameStatus.class);
+                if (status.isPlayer1Ready() && status.isPlayer2Ready()) {
+                    state.setGameStatus(status);
+                    startActivity(new Intent(this, PlayGame.class));
+                    finish();
+                }
+            }
+
+        }
+    }
+
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+        General.makeLongToast(getBaseContext(), databaseError.getMessage());
+    }
+
+    private void sendDetails() {
+
+        Map<String, Object> map = new HashMap<>();
+        map.put(Helper.playerGrid(state.getPlayer().getNo()), Helper.convertCellType(itemList));
+        map.put(Helper.playerShip(state.getPlayer().getNo()), Helper.convertShipType(itemList));
+        map.put(Helper.playerReady(state.getPlayer().getNo()), true);
+        map.put(NETWORK_GAME_ID, state.getGameDetails().getGameID());
+        map.put(NETWORK_GAME_TURN, 0);
+        myRef.child(state.getGameDetails().getGameID()).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                playerReady = true;
+                showShips.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                showShips.setText(getString(R.string.waiting_player));
+            }
+        });
+    }
+
+    private void showWarning() {
+        new AlertDialog.Builder(ArrangeShips.this)
+                .setTitle("Are you sure?")
+                .setMessage(getString(R.string.game_start_warning))
+                .setPositiveButton(ok, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        sendDetails();
+                    }
+                }).setNegativeButton(cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+            }
+        }).show();
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        active = true;
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        active = false;
+        myRef.child(state.getGameDetails().getGameID()).removeEventListener(this);
+    }
+
 
 }
