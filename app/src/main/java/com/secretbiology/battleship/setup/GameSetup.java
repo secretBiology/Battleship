@@ -84,13 +84,15 @@ public class GameSetup extends AppCompatActivity implements SwipeRefreshLayout.O
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (dataSnapshot != null) {
-                    if ((Boolean) dataSnapshot.getValue()) {
-                        progressDialog.hide();
-                        General.makeLongToast(getBaseContext(), "Oops! game is full.");
-                        getGames();
+                    if (dataSnapshot.getValue() != null) {
+                        if ((Boolean) dataSnapshot.getValue()) {
+                            progressDialog.hide();
+                            General.makeLongToast(getBaseContext(), "Oops! game is full.");
+                            getGames();
 
-                    } else {
-                        enterGame(pos);
+                        } else {
+                            enterGame(pos);
+                        }
                     }
                 } else {
                     progressDialog.hide();
@@ -118,13 +120,15 @@ public class GameSetup extends AppCompatActivity implements SwipeRefreshLayout.O
         GameDetails details = games.get(pos);
         details.setFull(true);
         details.setPlayer2(player);
-        GameState.initialize(details);
+        GameState.initialize(details, 1);
         myRef.child(details.getGameID()).setValue(details).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 progressDialog.hide();
                 if (task.isSuccessful()) {
-                    startActivity(new Intent(GameSetup.this, NewGame.class));
+                    Intent intent = new Intent(GameSetup.this, NewGame.class);
+                    intent.setAction(NewGame.ACTION_JOIN);
+                    startActivity(intent);
                 } else {
                     General.makeLongToast(getBaseContext(), task.getException().getMessage());
                 }
@@ -143,17 +147,28 @@ public class GameSetup extends AppCompatActivity implements SwipeRefreshLayout.O
         player.setUid(prefs.getUID());
         player.setCreator(true);
         player.setNo(0);
+
+        Player enemy = new Player();
+        enemy.setName("--");
+        enemy.setEmail("--");
+        enemy.setUid("--");
+        enemy.setCreator(false);
+        enemy.setNo(1);
+
         details.setCreationTimestamp(General.timeStamp());
         details.setPlayer1(player);
+        details.setPlayer2(enemy);
         details.setGameName("battleship");
-        GameState.initialize(details);
+        GameState.initialize(details, 0);
 
         myRef.child(gameID).setValue(details).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
                 progressDialog.hide();
                 if (task.isSuccessful()) {
-                    startActivity(new Intent(GameSetup.this, NewGame.class));
+                    Intent intent = new Intent(GameSetup.this, NewGame.class);
+                    intent.setAction(NewGame.ACTION_CREATE);
+                    startActivity(intent);
                 } else {
                     General.makeLongToast(getBaseContext(), task.getException().getMessage());
                 }

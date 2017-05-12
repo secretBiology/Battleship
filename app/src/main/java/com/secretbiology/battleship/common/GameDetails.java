@@ -77,4 +77,5 @@ public class GameDetails {
     public void setRunning(boolean running) {
         isRunning = running;
     }
+
 }

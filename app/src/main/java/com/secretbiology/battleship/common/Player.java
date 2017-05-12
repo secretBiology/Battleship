@@ -18,6 +18,7 @@ public class Player {
     private int points;
     private int no;
     private List<BoardItem> grid;
+    private boolean isReady;
 
     public Player() {
     }
@@ -76,5 +77,13 @@ public class Player {
 
     public void setGrid(List<BoardItem> grid) {
         this.grid = grid;
+    }
+
+    public boolean isReady() {
+        return isReady;
+    }
+
+    public void setReady(boolean ready) {
+        isReady = ready;
     }
 }

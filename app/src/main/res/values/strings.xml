@@ -14,4 +14,9 @@
 
     <string name="no_games">No games found. You can create one!</string>
     <string name="created_by">Created by : %s</string>
+    <string name="waiting_player">Waiting for opponent</string>
+    <string name="click_to_ready">I am ready!</string>
+    <string name="is_ready">Is ready!</string>
+    <string name="game_cancelled">Oops! Opponent has disconnected or cancelled the game. You can join another or create new. </string>
+
 </resources>
