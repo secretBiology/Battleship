@@ -9,6 +9,7 @@ public interface GameConstants {
 
     String BASE_DATABASE_NODE = "games/battleship";
     String GAME_LOBBY = "games/battleship/lobby";
+    String GAME_ARRANGE = "games/battleship/arrange";
     String GAME_RUN = "games/battleship/running";
 
     int BOARD_COLUMNS = 10;

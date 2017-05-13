@@ -29,7 +29,10 @@ public class Login extends AppCompatActivity {
         ButterKnife.bind(this);
         pref = new GamePref(getBaseContext());
         if (pref.isAuthenticated()) {
-            startActivity(new Intent(this, GameSetup.class));
+            Intent intent = new Intent(this, GameSetup.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
     }
 
@@ -43,7 +46,10 @@ public class Login extends AppCompatActivity {
             pref.setName(name.getText().toString());
             pref.setEmail(email.getText().toString());
             pref.userLoggedIn();
-            startActivity(new Intent(this, GameSetup.class));
+            Intent intent = new Intent(this, GameSetup.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
         }
     }
 }

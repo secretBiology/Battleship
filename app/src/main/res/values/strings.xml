@@ -25,6 +25,7 @@
 
     <string name="your_turn">Your turn!</string>
     <string name="opponent_turn">Opponents turn!</string>
+    <string name="back_cancel">You are the creator of this game. If you leave this window, game will be cancelled. Do you want to continue?</string>
 
     <string name="winner">Final Scores\n%1$s : %2$d\n%3$s : %4$d</string>
 </resources>

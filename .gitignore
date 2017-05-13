@@ -11,3 +11,4 @@
 gradle.properties
 app/google-services.json
 gradle/
+*.jks

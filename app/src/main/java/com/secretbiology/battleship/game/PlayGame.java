@@ -28,6 +28,7 @@ import com.secretbiology.battleship.common.GameState;
 import com.secretbiology.battleship.common.GameStatus;
 import com.secretbiology.battleship.common.Helper;
 import com.secretbiology.battleship.common.Player;
+import com.secretbiology.helpers.general.General;
 import com.secretbiology.helpers.general.Log;
 
 import java.util.ArrayList;
@@ -95,6 +96,9 @@ public class PlayGame extends AppCompatActivity implements ValueEventListener {
         updateGame();
         myRef = FirebaseDatabase.getInstance().getReference(GameConstants.GAME_RUN);
         myRef.child(state.getGameDetails().getGameID()).addValueEventListener(this);
+        if (state.getPlayer().getNo() == 0) {
+            FirebaseDatabase.getInstance().getReference(GameConstants.GAME_ARRANGE).child(state.getGameDetails().getGameID()).removeValue();
+        }
     }
 
     private void updatePlayerInfo(Player player) {
@@ -192,13 +196,14 @@ public class PlayGame extends AppCompatActivity implements ValueEventListener {
 
     @Override
     public void onCancelled(DatabaseError databaseError) {
-
+        General.makeLongToast(getBaseContext(), databaseError.getMessage());
     }
 
     @Override
     public void onStart() {
         super.onStart();
         active = true;
+        myRef.child(state.getGameDetails().getGameID()).addValueEventListener(this);
     }
 
     @Override

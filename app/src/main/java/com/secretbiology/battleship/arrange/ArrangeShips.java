@@ -74,7 +74,7 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
         setContentView(R.layout.arrange_board);
         ButterKnife.bind(this);
         state = GameState.getInstance();
-        myRef = FirebaseDatabase.getInstance().getReference(GameConstants.GAME_RUN);
+        myRef = FirebaseDatabase.getInstance().getReference(GameConstants.GAME_ARRANGE);
 
         shipMap = Helper.getShips();
 
@@ -242,20 +242,26 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
 
     private void sendDetails() {
 
-        Map<String, Object> map = new HashMap<>();
+        final Map<String, Object> map = new HashMap<>();
         map.put(Helper.playerGrid(state.getPlayer().getNo()), Helper.convertCellType(itemList));
         map.put(Helper.playerShip(state.getPlayer().getNo()), Helper.convertShipType(itemList));
         map.put(Helper.playerReady(state.getPlayer().getNo()), true);
         map.put(NETWORK_GAME_ID, state.getGameDetails().getGameID());
         map.put(NETWORK_GAME_TURN, 0);
-        myRef.child(state.getGameDetails().getGameID()).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+        FirebaseDatabase.getInstance().getReference(GameConstants.GAME_RUN).child(state.getGameDetails().getGameID()).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
             @Override
             public void onComplete(@NonNull Task<Void> task) {
-                playerReady = true;
-                showShips.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
-                showShips.setText(getString(R.string.waiting_player));
+                myRef.child(state.getGameDetails().getGameID()).updateChildren(map).addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        playerReady = true;
+                        showShips.setBackgroundColor(ContextCompat.getColor(getBaseContext(), R.color.green));
+                        showShips.setText(getString(R.string.waiting_player));
+                    }
+                });
             }
         });
+
     }
 
     private void showWarning() {
@@ -277,6 +283,7 @@ public class ArrangeShips extends AppCompatActivity implements ShipFragment.OnSh
     public void onStart() {
         super.onStart();
         active = true;
+        myRef.child(state.getGameDetails().getGameID()).addValueEventListener(this);
     }
 
     @Override

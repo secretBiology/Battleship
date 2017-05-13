@@ -1,9 +1,10 @@
 package com.secretbiology.battleship.setup;
 
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AlertDialog.Builder;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import butterknife.BindViews;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
+import static android.R.string.cancel;
 import static android.R.string.ok;
 
 public class NewGame extends AppCompatActivity implements ValueEventListener {
@@ -89,11 +91,11 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
                     finish();
                 }
             } else {
-                new AlertDialog.Builder(NewGame.this)
+                new Builder(NewGame.this)
                         .setTitle("Oops")
                         .setMessage(getString(R.string.game_cancelled))
                         .setCancelable(false)
-                        .setPositiveButton(ok, new DialogInterface.OnClickListener() {
+                        .setPositiveButton(ok, new OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 dialog.dismiss();
                                 finish();
@@ -106,7 +108,7 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
 
     @Override
     public void onCancelled(DatabaseError databaseError) {
-
+        General.makeLongToast(getBaseContext(), databaseError.getMessage());
     }
 
     private void setForPlayer(Player player) {
@@ -143,6 +145,7 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
     public void onStart() {
         super.onStart();
         active = true;
+        myRef.child(state.getGameDetails().getGameID()).addValueEventListener(this);
     }
 
     @Override
@@ -160,11 +163,36 @@ public class NewGame extends AppCompatActivity implements ValueEventListener {
             if (getIntent().getAction().equals(ACTION_JOIN)) {
                 HashMap<String, Object> map = new HashMap<>();
                 map.put("full", false);
-                map.put("player2", null);
+                map.put(GameConstants.NETWORK_PLAYER_2, null);
                 myRef.child(state.getGameDetails().getGameID()).updateChildren(map);
             } else {
                 myRef.child(state.getGameDetails().getGameID()).removeValue();
             }
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (state.getPlayer().getNo() == 0) {
+
+            new Builder(NewGame.this)
+                    .setTitle("Are you sure?")
+                    .setMessage(getString(R.string.back_cancel))
+                    .setCancelable(false)
+                    .setPositiveButton(ok, new OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    }).setNegativeButton(cancel, new OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+
+                }
+            })
+                    .show();
+
+        } else {
+            super.onBackPressed();
         }
     }
 
